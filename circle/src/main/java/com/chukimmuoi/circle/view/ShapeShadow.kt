@@ -167,17 +167,17 @@ class ShapeShadow : View {
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        return when (event.action) {
+
+        when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 startAnimation(ZoomInAnimation())
-                true
             }
             MotionEvent.ACTION_UP -> {
                 startAnimation(ZoomOutAnimation())
-                true
             }
-            else -> false
         }
+
+        return super.onTouchEvent(event)
     }
 
     inner class ZoomInAnimation: Animation() {
