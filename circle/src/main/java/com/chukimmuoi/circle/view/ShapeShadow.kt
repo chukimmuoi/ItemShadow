@@ -5,10 +5,15 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.os.Build
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
+import android.view.animation.Animation
+import android.view.animation.Transformation
 import androidx.annotation.RequiresApi
 import com.chukimmuoi.circle.R
 import com.chukimmuoi.circle.module.Circle
+import com.chukimmuoi.circle.utils.convertDpToPixel
+import com.chukimmuoi.circle.utils.getGoldenRatioLarge
 import kotlin.math.min
 
 /**
@@ -22,13 +27,16 @@ import kotlin.math.min
  */
 class ShapeShadow : View {
 
-    companion object {
-        private val DEFAULT_SIZE_VALUES = 48
-        private val SHADOW_WIDTH_VALUES = 16
-    }
+    private val DEFAULT_SIZE_VALUES = 48.convertDpToPixel(resources)
+    private val SHADOW_WIDTH_VALUES = 4.convertDpToPixel(resources)
 
-    private var mRootWidth = DEFAULT_SIZE_VALUES
-    private var mRootHeight = DEFAULT_SIZE_VALUES
+    private var mRootWidthNormal  = DEFAULT_SIZE_VALUES
+    private var mRootHeightNormal = DEFAULT_SIZE_VALUES
+    private var mRadiusNormal          = 0F
+
+    private var mRootWidthPress  = 0
+    private var mRootHeightPress = 0
+    private var mRadiusPress     = 0F
 
     private var mRootColor = Color.WHITE
     private var mRootShadowColor = Color.BLACK
@@ -55,11 +63,11 @@ class ShapeShadow : View {
             : super(context, attrs) {
         var typeArray = context.obtainStyledAttributes(attrs, R.styleable.shapeShadowView)
 
-        this.mRootWidth = typeArray.getDimensionPixelSize(
+        this.mRootWidthNormal = typeArray.getDimensionPixelSize(
             R.styleable.shapeShadowView_root_width,
             DEFAULT_SIZE_VALUES)
 
-        this.mRootHeight = typeArray.getDimensionPixelSize(
+        this.mRootHeightNormal = typeArray.getDimensionPixelSize(
             R.styleable.shapeShadowView_root_height,
             DEFAULT_SIZE_VALUES)
 
@@ -72,6 +80,9 @@ class ShapeShadow : View {
             Color.BLACK)
 
         typeArray.recycle()
+
+        this.mRootWidthPress  = mRootWidthNormal.getGoldenRatioLarge()
+        this.mRootHeightPress = mRootHeightNormal.getGoldenRatioLarge()
     }
 
     /**
@@ -114,8 +125,8 @@ class ShapeShadow : View {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 
         // Width & height nhỏ nhất của view.
-        val desiredWidth = mRootWidth
-        val desireHeight = mRootWidth
+        val desiredWidth = mRootWidthPress
+        val desireHeight = mRootHeightPress
 
         // Tính toán, thỏa thuận với viewGroup để xác định kích thước cho view.
         val width  = resolveSize(desiredWidth, widthMeasureSpec)
@@ -131,14 +142,17 @@ class ShapeShadow : View {
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
 
-        val xCenter = (mRootWidth / 2).toFloat()
-        val yCenter = (mRootWidth / 2).toFloat()
-        val radius = min(xCenter, yCenter) - SHADOW_WIDTH_VALUES
+        val xCenter = (mRootWidthPress / 2).toFloat()
+        val yCenter = (mRootHeightPress / 2).toFloat()
+
+        mRadiusPress  = min(xCenter, yCenter)
+        mRadiusNormal = min(mRootWidthNormal / 2, mRootHeightNormal / 2).toFloat()
 
         with(mShape) {
             setCenter(xCenter, yCenter)
-            setRadius(radius)
+            setRadius(mRadiusNormal)
             setColor(mRootColor)
+            setShadowColor(mShadowColor)
             setAlpha(255)
         }
     }
@@ -150,5 +164,43 @@ class ShapeShadow : View {
         super.onDraw(canvas)
 
         mShape.draw(canvas)
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        return when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                startAnimation(ZoomInAnimation())
+                true
+            }
+            MotionEvent.ACTION_UP -> {
+                startAnimation(ZoomOutAnimation())
+                true
+            }
+            else -> false
+        }
+    }
+
+    inner class ZoomInAnimation: Animation() {
+
+        init {
+            duration = 300L
+        }
+
+        override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
+            mShape.updateRadius(interpolatedTime, mRadiusNormal, mRadiusNormal * 1.2F)
+            invalidate()
+        }
+    }
+
+    inner class ZoomOutAnimation: Animation() {
+
+        init {
+            duration = 300L
+        }
+
+        override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
+            mShape.updateRadius(interpolatedTime, mRadiusNormal * 1.2F, mRadiusNormal)
+            invalidate()
+        }
     }
 }

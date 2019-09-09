@@ -1,7 +1,6 @@
 package com.chukimmuoi.circle.module
 
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.PointF
 
 /**
@@ -19,14 +18,10 @@ class Circle : Shape() {
 
     private var mRadius = 0F
 
-    private var mShadowColor: Int = Color.BLACK
+
 
     override fun setColor(color: Int) {
         paint.color = color
-    }
-
-    override fun setShadowColor(color: Int) {
-        mShadowColor = color
     }
 
     override fun setAlpha(alpha: Int) {
@@ -41,8 +36,17 @@ class Circle : Shape() {
         mRadius = radius
     }
 
+    fun updateRadius(interpolatedTime: Float, from: Float, to: Float) {
+        paint.setShadowLayer(
+            transformation(interpolatedTime, if (from > to) 16F else 0F, if (from > to) 0F else 16F),
+            0F,
+            0F,
+            mShadowColor)
+
+        mRadius = transformation(interpolatedTime, mRadius, to)
+    }
+
     override fun draw(canvas: Canvas) {
-        paint.setShadowLayer(4F, 0F, 0F, mShadowColor)
         canvas.drawCircle(mCenter.x, mCenter.y, mRadius, paint)
     }
 }
