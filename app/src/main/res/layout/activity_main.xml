@@ -17,6 +17,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:root_width="96dp"
         app:root_height="96dp"
-        app:root_color="#098F21"/>
+        app:root_color="#FFFFFF"
+        app:root_inactive_image="@drawable/ic_hdr_weak_black_24dp"
+        app:root_active_image="@drawable/ic_hdr_strong_black_24dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

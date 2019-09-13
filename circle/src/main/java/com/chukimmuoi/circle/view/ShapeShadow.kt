@@ -12,6 +12,7 @@ import android.view.animation.Transformation
 import androidx.annotation.RequiresApi
 import com.chukimmuoi.circle.R
 import com.chukimmuoi.circle.module.Circle
+import com.chukimmuoi.circle.module.Image
 import com.chukimmuoi.circle.utils.convertDpToPixel
 import com.chukimmuoi.circle.utils.getGoldenRatioLarge
 import kotlin.math.min
@@ -41,8 +42,15 @@ class ShapeShadow : View {
     private var mRootColor = Color.WHITE
     private var mRootShadowColor = Color.BLACK
 
+    private var mRootActiveImage = R.drawable.ic_active_24dp
+    private var mRootInActiveImage = R.drawable.ic_inactive_24dp
+
     private val mShape: Circle by lazy {
         Circle()
+    }
+
+    private val mImage: Image by lazy {
+        Image(context)
     }
 
     /**
@@ -78,6 +86,14 @@ class ShapeShadow : View {
         this.mRootShadowColor = typeArray.getColor(
             R.styleable.shapeShadowView_root_shadow_color,
             Color.BLACK)
+
+        this.mRootActiveImage = typeArray.getResourceId(
+            R.styleable.shapeShadowView_root_active_image,
+            R.drawable.ic_active_24dp)
+
+        this.mRootInActiveImage = typeArray.getResourceId(
+            R.styleable.shapeShadowView_root_inactive_image,
+            R.drawable.ic_inactive_24dp)
 
         typeArray.recycle()
 
@@ -155,6 +171,10 @@ class ShapeShadow : View {
             setShadowColor(mShadowColor)
             setAlpha(255)
         }
+
+        with(mImage) {
+            setCoordinates(mRootInActiveImage, xCenter, yCenter, mRadiusNormal)
+        }
     }
 
     /**
@@ -164,6 +184,7 @@ class ShapeShadow : View {
         super.onDraw(canvas)
 
         mShape.draw(canvas)
+        mImage.draw(canvas)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -188,6 +209,11 @@ class ShapeShadow : View {
 
         override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
             mShape.updateRadius(interpolatedTime, mRadiusNormal, mRadiusNormal * 1.2F)
+            mImage.updateSize(
+                mRootActiveImage, interpolatedTime,
+                mRadiusNormal, mRadiusNormal * 1.2F
+            )
+
             invalidate()
         }
     }
@@ -200,6 +226,11 @@ class ShapeShadow : View {
 
         override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
             mShape.updateRadius(interpolatedTime, mRadiusNormal * 1.2F, mRadiusNormal)
+            mImage.updateSize(
+                mRootInActiveImage, interpolatedTime,
+                mRadiusNormal * 1.2F, mRadiusNormal
+            )
+
             invalidate()
         }
     }

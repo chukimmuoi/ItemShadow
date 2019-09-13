@@ -7,5 +7,8 @@
         <attr name="root_color" format="color" />
 
         <attr name="root_shadow_color" format="color"/>
+
+        <attr name="root_active_image" format="integer"/>
+        <attr name="root_inactive_image" format="integer"/>
     </declare-styleable>
 </resources>
