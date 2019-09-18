@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.os.Build
 import android.util.AttributeSet
+import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.Animation
@@ -44,6 +45,8 @@ class ShapeShadow : View {
 
     private var mRootActiveImage = R.drawable.ic_active_24dp
     private var mRootInActiveImage = R.drawable.ic_inactive_24dp
+
+    private var mTimeAnimation: Int = 0
 
     private val mShape: Circle by lazy {
         Circle()
@@ -94,6 +97,11 @@ class ShapeShadow : View {
         this.mRootInActiveImage = typeArray.getResourceId(
             R.styleable.shapeShadowView_root_inactive_image,
             R.drawable.ic_inactive_24dp)
+
+        this.mTimeAnimation = typeArray.getInt(
+            R.styleable.shapeShadowView_time_animation,
+            300
+        )
 
         typeArray.recycle()
 
@@ -187,8 +195,17 @@ class ShapeShadow : View {
         mImage.draw(canvas)
     }
 
-    override fun onTouchEvent(event: MotionEvent): Boolean {
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        startAnimation(ZoomOutAnimation())
+        return super.onKeyDown(keyCode, event)
+    }
 
+    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+        startAnimation(ZoomInAnimation())
+        return super.onKeyUp(keyCode, event)
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 startAnimation(ZoomInAnimation())
@@ -204,7 +221,7 @@ class ShapeShadow : View {
     inner class ZoomInAnimation: Animation() {
 
         init {
-            duration = 300L
+            duration = mTimeAnimation.toLong()
         }
 
         override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
@@ -221,7 +238,7 @@ class ShapeShadow : View {
     inner class ZoomOutAnimation: Animation() {
 
         init {
-            duration = 300L
+            duration = mTimeAnimation.toLong()
         }
 
         override fun applyTransformation(interpolatedTime: Float, t: Transformation) {

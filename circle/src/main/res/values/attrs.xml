@@ -10,5 +10,7 @@
 
         <attr name="root_active_image" format="integer"/>
         <attr name="root_inactive_image" format="integer"/>
+
+        <attr name="time_animation" format="integer" />
     </declare-styleable>
 </resources>
